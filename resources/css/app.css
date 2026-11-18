@@ -1,0 +1,90 @@
+:root {
+    --bg: #f4f6fb;
+    --kartu: #ffffff;
+    --teks: #0a0f1e;
+    --redup: #5b6478;
+    --garis: #dfe3ec;
+    --aksen: #14b8a6;
+    --aksen-tua: #0f8f81;
+    --galat: #dc2626;
+}
+
+[data-theme="dark"] {
+    --bg: #0a0f1e;
+    --kartu: #121a2e;
+    --teks: #e8ecf6;
+    --redup: #93a0bb;
+    --garis: #1f2a45;
+    --galat: #f87171;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--teks);
+}
+
+.bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .75rem 1.5rem;
+    background: var(--kartu);
+    border-bottom: 1px solid var(--garis);
+}
+.bar .merek { font-weight: 700; color: var(--aksen); }
+.bar .kanan { display: flex; align-items: center; gap: 1rem; font-size: .85rem; color: var(--redup); }
+.bar a { color: var(--redup); text-decoration: none; }
+.bar a:hover { color: var(--aksen); }
+
+main { max-width: 960px; margin: 2rem auto; padding: 0 1.5rem; }
+main.tengah { display: grid; place-items: center; min-height: 100vh; margin: 0 auto; }
+
+.kartu {
+    width: 100%;
+    max-width: 420px;
+    padding: 2rem;
+    background: var(--kartu);
+    border: 1px solid var(--garis);
+    border-radius: 14px;
+}
+.kartu.lebar { max-width: none; }
+.kartu h1 { margin: 0 0 .25rem; font-size: 1.25rem; }
+.kartu .sub { margin: 0 0 1.5rem; color: var(--redup); font-size: .85rem; }
+
+.field { margin-bottom: 1rem; }
+.field label { display: block; margin-bottom: .35rem; font-size: .8rem; color: var(--redup); }
+.input {
+    width: 100%;
+    padding: .65rem .8rem;
+    font: inherit;
+    color: var(--teks);
+    background: var(--bg);
+    border: 1px solid var(--garis);
+    border-radius: 8px;
+}
+.input:focus { outline: 2px solid var(--aksen); outline-offset: 1px; }
+.galat { margin: .35rem 0 0; font-size: .8rem; color: var(--galat); }
+
+.tombol {
+    width: 100%;
+    padding: .7rem;
+    font: inherit;
+    font-weight: 600;
+    color: #fff;
+    background: var(--aksen);
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.tombol:hover { background: var(--aksen-tua); }
+.tombol.kecil { width: auto; padding: .35rem .8rem; font-size: .8rem; background: transparent; color: var(--redup); border: 1px solid var(--garis); }
+.tombol.kecil:hover { color: var(--aksen); border-color: var(--aksen); background: transparent; }
+
+.info { padding: .7rem .9rem; margin-bottom: 1rem; font-size: .85rem; border-radius: 8px; background: rgba(20, 184, 166, .12); color: var(--aksen); }
+.info.peringatan { background: rgba(245, 158, 11, .12); color: #f59e0b; }
