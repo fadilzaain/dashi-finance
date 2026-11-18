@@ -4,13 +4,14 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Reader\Csv;
 
 class BedahFileBank extends Command
 {
     protected $signature = 'keu:bedah-file
         {path : Lokasi file mutasi di komputer ini}
-        {--kolom-no=2 : Indeks kolom (mulai 0) yang berisi nomor urut transaksi}
-        {--sembunyikan= : Indeks kolom yang disamarkan, pisahkan koma (mis. 12 untuk deskripsi BNI .xls)}';
+        {--kolom-no=2 : Indeks kolom (mulai 0) yang berisi nomor urut/nomor jurnal transaksi (CSV BNI: 3)}
+        {--sembunyikan= : Indeks kolom yang disamarkan, pisahkan koma (mis. 12 untuk deskripsi BNI .xls, 4 untuk deskripsi BNI .csv)}';
 
     protected $description = 'Menampilkan struktur file mutasi bank (header, contoh satu baris, baris non-transaksi) untuk menulis parser';
 
@@ -27,8 +28,18 @@ class BedahFileBank extends Command
         $samar = array_filter(array_map('trim', explode(',', (string) $this->option('sembunyikan'))), 'strlen');
         $samar = array_map('intval', $samar);
 
+        // CSV: pemisah dipaksa koma. Deteksi otomatis pernah salah menebak spasi sebagai pemisah
+        // karena deskripsi transaksi penuh spasi. Format lain: dikenali dari isi file.
+        if (strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'csv') {
+            $reader = new Csv();
+            $reader->setDelimiter(',');
+            $reader->setEnclosure('"');
+            $reader->setInputEncoding('UTF-8');
+        } else {
+            $reader = IOFactory::createReaderForFile($path);
+        }
+
         // Data mentah apa adanya: tanpa hitung rumus, tanpa format (tanggal tetap angka serial)
-        $reader = IOFactory::createReaderForFile($path);
         $reader->setReadDataOnly(true);
         $sheet = $reader->load($path)->getSheet(0);
         $baris = $sheet->toArray(null, false, false, false);
@@ -47,7 +58,7 @@ class BedahFileBank extends Command
 
         $this->newLine();
         $this->line('== Baris sebelum transaksi pertama ==');
-        // Tanpa transaksi terdeteksi (mis. CSV), cukup 5 baris pertama. Penyamaran berlaku di semua bagian.
+        // Tanpa transaksi terdeteksi, cukup 5 baris pertama. Penyamaran berlaku di semua bagian.
         $batas = min($pertama ?? 5, 40);
         foreach (array_slice($baris, 0, $batas, true) as $i => $row) {
             $this->tampil($i, $row, $samar);

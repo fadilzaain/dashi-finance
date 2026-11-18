@@ -58,6 +58,7 @@ return [
             'collation' => 'utf8mb4_unicode_ci',
             'prefix'    => '',
             'strict'    => true,
+            'timezone'  => '+07:00',
             'engine'    => null,
         ],
 
