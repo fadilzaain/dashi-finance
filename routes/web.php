@@ -31,15 +31,15 @@ Route::middleware(['auth', 'aktif', 'wajib.ganti'])->group(function () {
         Route::get('/', [UnggahMutasiController::class, 'index'])->name('form');
         Route::post('/', [UnggahMutasiController::class, 'store'])->middleware('throttle:10,1')->name('simpan');
         Route::get('/{batch}', [UnggahMutasiController::class, 'tampil'])->whereUuid('batch')->name('tampil');
-    });
 
-           // Memindahkan ke data final / membuang batch. Dibatasi lebih ketat dari unggah biasa.
+        // Memindahkan ke data final / membuang batch. Dibatasi lebih ketat dari unggah biasa.
         Route::post('/{batch}/simpan', [UnggahMutasiController::class, 'simpanKeFinal'])
             ->whereUuid('batch')->middleware('throttle:6,1')->name('setujui');
         Route::post('/{batch}/batalkan', [UnggahMutasiController::class, 'batalkan'])
             ->whereUuid('batch')->middleware('throttle:6,1')->name('batalkan');
+    });
 
-        // Khusus admin
+    // Khusus admin
     Route::middleware('role:admin')->group(function () {
         Route::get('/audit', [AuditLogController::class, 'index'])->name('audit.index');
         // Kelola pengguna ditambahkan di milestone berikutnya
