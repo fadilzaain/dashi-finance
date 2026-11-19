@@ -9,12 +9,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
     {{-- Pasang tema sebelum halaman digambar supaya tidak berkedip --}}
     <script>document.documentElement.dataset.theme = localStorage.getItem('tema') || 'dark';</script>
-    @vite('resources/css/app.css')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     @auth
         <header class="bar">
-            <span class="merek">DASHI Finance</span>
+            <div class="kiri">
+                <span class="merek">DASHI Finance</span>
+                <nav class="menu">
+                    <a href="{{ route('beranda') }}" @class(['aktif' => request()->routeIs('beranda')])>Beranda</a>
+                    <a href="{{ route('unggah.form') }}" @class(['aktif' => request()->routeIs('unggah.*')])>Unggah mutasi</a>
+                </nav>
+            </div>
             <div class="kanan">
                 <span>{{ auth()->user()->name }} · {{ \App\Models\User::LABEL_ROLE[auth()->user()->role] ?? auth()->user()->role }}</span>
                 <a href="{{ route('akun.password') }}">Ganti password</a>

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GantiPasswordController;
+use App\Http\Controllers\UnggahMutasiController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route(auth()->check() ? 'beranda' : 'login'));
@@ -23,6 +24,13 @@ Route::middleware(['auth', 'aktif', 'wajib.ganti'])->group(function () {
         ->name('akun.password.simpan');
 
     Route::view('/beranda', 'beranda')->name('beranda');
+
+    // Unggah mutasi bank: admin dan keuangan. {batch} memakai kode_batch (UUID), bukan id berurutan.
+    Route::middleware('role:admin,keuangan')->prefix('unggah')->name('unggah.')->group(function () {
+        Route::get('/', [UnggahMutasiController::class, 'index'])->name('form');
+        Route::post('/', [UnggahMutasiController::class, 'store'])->middleware('throttle:10,1')->name('simpan');
+        Route::get('/{batch}', [UnggahMutasiController::class, 'tampil'])->whereUuid('batch')->name('tampil');
+    });
 
     // Rute khusus admin (kelola pengguna, audit log) ditambahkan di milestone berikutnya:
     // Route::middleware('role:admin')->group(function () { ... });

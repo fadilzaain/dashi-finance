@@ -9,6 +9,7 @@
 
     <div class="kartu lebar">
         <h1>Beranda</h1>
-        <p class="sub">Fondasi aplikasi sudah berjalan. Unggah mutasi rekening menyusul di milestone berikutnya.</p>
+        <p class="sub">Unggah mutasi rekening BNI dan BPD untuk dibaca dan diperiksa sebelum disimpan.</p>
+        <a href="{{ route('unggah.form') }}" class="tombol sempit">Unggah mutasi</a>
     </div>
 @endsection
