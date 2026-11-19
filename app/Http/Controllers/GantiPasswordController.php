@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
+use App\Services\AuditLog;
 
 class GantiPasswordController extends Controller
 {
@@ -35,6 +36,7 @@ class GantiPasswordController extends Controller
         ])->save();
 
         $request->session()->regenerate();
+        AuditLog::catatAtauLapor(AuditLog::GANTI_PASSWORD, $request->user());
 
         return redirect()->route('beranda')->with('status', 'Password berhasil diganti.');
     }

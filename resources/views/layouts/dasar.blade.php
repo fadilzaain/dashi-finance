@@ -19,6 +19,9 @@
                 <nav class="menu">
                     <a href="{{ route('beranda') }}" @class(['aktif' => request()->routeIs('beranda')])>Beranda</a>
                     <a href="{{ route('unggah.form') }}" @class(['aktif' => request()->routeIs('unggah.*')])>Unggah mutasi</a>
+                    @if (auth()->user()->isAdmin())
+                        <a href="{{ route('audit.index') }}" @class(['aktif' => request()->routeIs('audit.*')])>Audit log</a>
+                    @endif
                 </nav>
             </div>
             <div class="kanan">

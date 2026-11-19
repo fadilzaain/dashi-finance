@@ -5,15 +5,21 @@ namespace App\Http\Controllers;
 use App\Models\KeuImporBaris;
 use App\Models\KeuImporBatch;
 use App\Models\KeuRekeningBank;
+use App\Services\AuditLog;
 use App\Services\Keuangan\ImporMutasi;
+use App\Services\Keuangan\SimpanBatch;
+use App\Services\Keuangan\SimpanDitolak;
 use App\Services\Keuangan\Uang;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class UnggahMutasiController extends Controller
 {
-    public function __construct(private readonly ImporMutasi $impor)
-    {
+    public function __construct(
+        private readonly ImporMutasi $impor,
+        private readonly SimpanBatch $simpanBatch,
+    ) {
     }
 
     public function index()
@@ -47,6 +53,8 @@ class UnggahMutasiController extends Controller
         $sama = $this->impor->cariUnggahanSama($rekening, $hash);
 
         if ($sama !== null) {
+            AuditLog::catatAtauLapor(AuditLog::UNGGAH_DITOLAK_SAMA, $sama, null, ['hash_sha256' => $hash], $this->namaBersih($berkas->getClientOriginalName()));
+
             return back()
                 ->withInput($request->only('rekening_id'))
                 ->withErrors(['berkas' => 'File yang sama persis sudah pernah diunggah untuk rekening ini ('
@@ -56,7 +64,54 @@ class UnggahMutasiController extends Controller
 
         $batch = $this->impor->proses($rekening, $berkas, $hash, (int) $request->user()->id);
 
+        // Hanya angka ringkasan; isi transaksi (bisa memuat nama pasien) tidak ikut dicatat
+        AuditLog::catatAtauLapor(AuditLog::UNGGAH, $batch, null, [
+            'kode_batch' => $batch->kode_batch,
+            'rekening' => $rekening->kode,
+            'format' => $batch->format_file,
+            'ukuran_byte' => $batch->ukuran_byte,
+            'hash_sha256' => $batch->hash_sha256,
+            'status' => $batch->status,
+            'jumlah_baris' => $batch->jumlah_baris,
+            'jumlah_tidak_valid' => $batch->jumlah_tidak_valid,
+            'jumlah_duplikat' => $batch->jumlah_duplikat,
+            'hasil_rekonsiliasi' => $batch->hasil_rekonsiliasi ?? 'tidak_bisa_diperiksa',
+        ], $batch->nama_file_asli);
+
         return redirect()->route('unggah.tampil', $batch);
+    }
+
+    /**
+     * Tombol Simpan: memindahkan batch yang sudah diperiksa ke data final.
+     * Semua aturan (rekonsiliasi cocok, tidak ada baris tidak valid, konfirmasi) ditegakkan di SimpanBatch,
+     * bukan di sini, supaya tidak bisa dilewati dengan mengirim form buatan sendiri.
+     */
+    public function simpanKeFinal(Request $request, KeuImporBatch $batch)
+    {
+        try {
+            $jumlah = $this->simpanBatch->simpan($batch, $request->user(), $request->boolean('konfirmasi'));
+        } catch (SimpanDitolak $e) {
+            return back()->withErrors(['simpan' => $e->getMessage()]);
+        } catch (UniqueConstraintViolationException $e) {
+            // Transaksi yang sama baru saja disimpan lewat batch lain; transaksi dibatalkan, tidak ada yang tersimpan
+            report($e);
+
+            return back()->withErrors(['simpan' => 'Sebagian transaksi baru saja tersimpan lewat unggahan lain. Tidak ada yang disimpan; muat ulang halaman lalu periksa lagi.']);
+        }
+
+        return redirect()->route('unggah.tampil', $batch)
+            ->with('status', "{$jumlah} transaksi berhasil disimpan ke data final.");
+    }
+
+    public function batalkan(Request $request, KeuImporBatch $batch)
+    {
+        try {
+            $this->simpanBatch->batalkan($batch, $request->user());
+        } catch (SimpanDitolak $e) {
+            return back()->withErrors(['simpan' => $e->getMessage()]);
+        }
+
+        return redirect()->route('unggah.tampil', $batch)->with('status', 'Batch dibatalkan. File yang sama boleh diunggah ulang.');
     }
 
     public function tampil(KeuImporBatch $batch)
@@ -71,7 +126,16 @@ class UnggahMutasiController extends Controller
             'batch' => $batch->load('rekening'),
             'bermasalah' => $bermasalah,
             'kontrol' => $this->tabelKontrol($batch),
+            'kelayakan' => $batch->status === KeuImporBatch::STATUS_MENUNGGU_VERIFIKASI
+                ? $this->simpanBatch->periksa($batch)
+                : null,
         ]);
+    }
+
+    // Nama file dari pengguna: hanya untuk keterangan audit
+    private function namaBersih(string $nama): string
+    {
+        return mb_substr(mb_scrub(basename(str_replace('\\', '/', $nama))), 0, 255);
     }
 
     /**

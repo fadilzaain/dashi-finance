@@ -45,4 +45,34 @@ if (form) {
             tombol.textContent = labelAwal;
         }
     });
+    
+}
+
+// Halaman hasil: Simpan tidak boleh terkirim dua kali, dan Batalkan minta konfirmasi dulu
+document.querySelectorAll('form[data-konfirmasi]').forEach((formBatal) => {
+    formBatal.addEventListener('submit', (event) => {
+        if (!window.confirm(formBatal.dataset.konfirmasi)) {
+            event.preventDefault();
+        }
+    });
+});
+
+const formSimpan = document.getElementById('form-simpan');
+
+if (formSimpan) {
+    const tombolSimpan = formSimpan.querySelector('button[type="submit"]');
+    const labelSimpan = tombolSimpan.textContent;
+
+    formSimpan.addEventListener('submit', () => {
+        tombolSimpan.disabled = true;
+        tombolSimpan.textContent = 'Menyimpan…';
+    });
+
+    // Tombol Kembali di browser memulihkan halaman dari cache; kembalikan tombolnya
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+            tombolSimpan.disabled = false;
+            tombolSimpan.textContent = labelSimpan;
+        }
+    });
 }

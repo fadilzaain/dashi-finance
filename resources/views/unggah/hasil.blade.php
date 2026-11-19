@@ -20,6 +20,10 @@
 
     <p><a href="{{ route('unggah.form') }}">← Kembali ke unggah</a></p>
 
+    @if (session('status'))
+        <div class="info">{{ session('status') }}</div>
+    @endif
+
     <div class="kartu lebar">
         <h1>Hasil unggah <x-lencana :status="$batch->status" /></h1>
         <p class="sub">{{ $batch->nama_file_asli }}</p>
@@ -53,7 +57,7 @@
             <a href="{{ route('unggah.form') }}" class="tombol sempit">Unggah file lain</a>
         @endif
 
-        @if ($batch->status === KeuImporBatch::STATUS_MENUNGGU_VERIFIKASI)
+        @if (in_array($batch->status, [KeuImporBatch::STATUS_MENUNGGU_VERIFIKASI, KeuImporBatch::STATUS_DISIMPAN], true))
             <div class="ringkasan">
                 <div><strong>{{ $batch->jumlah_baris }}</strong><span>Total baris</span></div>
                 <div><strong>{{ $batch->jumlah_valid }}</strong><span>Valid</span></div>
@@ -156,9 +160,59 @@
                 </div>
             @endif
 
-            <div class="info atas">
-                Data ini baru tahap pemeriksaan. Belum masuk ke data final yang dibaca DASH-i; tombol Simpan menyusul di milestone berikutnya.
-            </div>
+            @if ($batch->status === KeuImporBatch::STATUS_DISIMPAN)
+                <div class="info atas">
+                    Batch ini sudah disimpan ke data final{{ $batch->disimpan_pada ? ' pada '.$batch->disimpan_pada->format('d/m/Y H:i') : '' }}.
+                </div>
+            @elseif ($kelayakan)
+                <h2 class="atas">Simpan ke data final</h2>
+
+                @error('simpan')
+                    <div class="info peringatan">{{ $message }}</div>
+                @enderror
+
+                @if ($kelayakan->bisaDisimpan())
+                    <p class="petunjuk">
+                        {{ $kelayakan->barisBaru }} transaksi baru akan masuk ke data final yang dibaca DASH-i
+                        @if ($kelayakan->barisDilewati > 0)
+                            ({{ $kelayakan->barisDilewati }} baris duplikat dilewati)
+                        @endif
+                        . Setelah disimpan, data tidak bisa diubah dari aplikasi ini.
+                    </p>
+
+                    <form method="POST" action="{{ route('unggah.setujui', $batch) }}" class="aksi-batch" id="form-simpan">
+                        @csrf
+                        @if ($kelayakan->konfirmasi !== [])
+                            <div class="info peringatan">
+                                <ul>
+                                    @foreach ($kelayakan->konfirmasi as $teks)
+                                        <li>{{ $teks }}</li>
+                                    @endforeach
+                                </ul>
+                                <label class="centang">
+                                    <input type="checkbox" name="konfirmasi" value="1" required>
+                                    Saya sudah membaca hal di atas dan tetap ingin menyimpan.
+                                </label>
+                            </div>
+                        @endif
+                        <button type="submit" class="tombol sempit">Simpan ke data final</button>
+                    </form>
+                @else
+                    <div class="info peringatan">
+                        <strong>Batch ini belum bisa disimpan.</strong>
+                        <ul>
+                            @foreach ($kelayakan->blokir as $teks)
+                                <li>{{ $teks }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('unggah.batalkan', $batch) }}" class="aksi-batch" data-konfirmasi="Batalkan batch ini? File yang sama bisa diunggah ulang.">
+                    @csrf
+                    <button type="submit" class="tombol kecil">Batalkan batch</button>
+                </form>
+            @endif
         @endif
     </div>
 @endsection

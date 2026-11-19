@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use App\Services\AuditLog;
 
 class ResetPassword extends Command
 {
@@ -42,6 +43,7 @@ class ResetPassword extends Command
             'wajib_ganti_password' => true,
         ])->save();
 
+        AuditLog::catatAtauLapor(AuditLog::PASSWORD_DIRESET, $user, null, null, 'Di-reset lewat perintah keu:reset-password');
         $this->info("Password {$user->email} sudah di-reset. Wajib diganti saat login berikutnya.");
         return self::SUCCESS;
     }

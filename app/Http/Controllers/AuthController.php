@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use App\Services\AuditLog;
 
 class AuthController extends Controller
 {
@@ -34,6 +35,7 @@ class AuthController extends Controller
 
         if (RateLimiter::tooManyAttempts($kunci, self::MAKS_PERCOBAAN)) {
             $detik = RateLimiter::availableIn($kunci);
+            AuditLog::catatAtauLapor(AuditLog::LOGIN_TERKUNCI, keterangan: 'Email: '.$data['email']);
 
             return back()
                 ->withInput($request->only('email'))

@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use App\Services\AuditLog;
 
 class BuatPengguna extends Command
 {
@@ -47,7 +48,7 @@ class BuatPengguna extends Command
             return self::FAILURE;
         }
 
-        User::create([
+        $baru = User::create([
             'name' => $nama,
             'email' => $email,
             'password' => $password,
@@ -56,6 +57,7 @@ class BuatPengguna extends Command
             'wajib_ganti_password' => true,
         ]);
 
+        AuditLog::catatAtauLapor(AuditLog::PENGGUNA_DIBUAT, $baru, null, ['role' => $role], 'Dibuat lewat perintah keu:buat-pengguna');
         $this->info("Akun {$email} ({$role}) dibuat. Password wajib diganti saat login pertama.");
         return self::SUCCESS;
     }

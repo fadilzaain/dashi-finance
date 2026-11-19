@@ -150,3 +150,14 @@ a.tombol.kecil { display: inline-block; }
 .catatan { margin: 0 0 1.5rem; padding-left: 1.1rem; font-size: .85rem; line-height: 1.6; }
 
 .halaman { display: flex; justify-content: space-between; margin-top: 1rem; font-size: .85rem; color: var(--redup); }
+
+/* Simpan / batalkan batch */
+.aksi-batch { margin: 1rem 0 0; }
+.aksi-batch .info { margin-bottom: .75rem; }
+.centang { display: flex; gap: .5rem; align-items: flex-start; margin-top: .6rem; cursor: pointer; }
+
+/* Halaman audit log */
+.filter-audit { display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-end; margin-bottom: 1.25rem; }
+.filter-audit .field { margin: 0; min-width: 150px; }
+.audit-detail { margin-top: .35rem; font-size: .8rem; }
+.audit-detail pre { margin: .25rem 0 .5rem; padding: .5rem; overflow-x: auto; border-radius: 6px; background: var(--bg); }

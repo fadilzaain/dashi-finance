@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GantiPasswordController;
 use App\Http\Controllers\UnggahMutasiController;
@@ -32,6 +33,15 @@ Route::middleware(['auth', 'aktif', 'wajib.ganti'])->group(function () {
         Route::get('/{batch}', [UnggahMutasiController::class, 'tampil'])->whereUuid('batch')->name('tampil');
     });
 
-    // Rute khusus admin (kelola pengguna, audit log) ditambahkan di milestone berikutnya:
-    // Route::middleware('role:admin')->group(function () { ... });
+           // Memindahkan ke data final / membuang batch. Dibatasi lebih ketat dari unggah biasa.
+        Route::post('/{batch}/simpan', [UnggahMutasiController::class, 'simpanKeFinal'])
+            ->whereUuid('batch')->middleware('throttle:6,1')->name('setujui');
+        Route::post('/{batch}/batalkan', [UnggahMutasiController::class, 'batalkan'])
+            ->whereUuid('batch')->middleware('throttle:6,1')->name('batalkan');
+
+        // Khusus admin
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/audit', [AuditLogController::class, 'index'])->name('audit.index');
+        // Kelola pengguna ditambahkan di milestone berikutnya
+    });
 });
