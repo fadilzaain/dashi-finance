@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GantiPasswordController;
@@ -26,7 +27,7 @@ Route::middleware(['auth', 'aktif', 'wajib.ganti'])->group(function () {
         ->middleware('throttle:6,1')
         ->name('akun.password.simpan');
 
-    Route::view('/beranda', 'beranda')->name('beranda');
+    Route::get('/beranda', [BerandaController::class, 'index'])->name('beranda');
 
     // Unggah mutasi bank: admin dan keuangan. {batch} memakai kode_batch (UUID), bukan id berurutan.
     Route::middleware('role:admin,keuangan')->prefix('unggah')->name('unggah.')->group(function () {

@@ -69,14 +69,40 @@
                     @endif
                 </nav>
             </div>
+            <d            @php
+                $namaLengkap = auth()->user()->name;
+                $inisial = \Illuminate\Support\Str::upper(
+                    collect(preg_split('/\s+/', trim($namaLengkap)))->filter()->take(2)->map(fn ($kata) => mb_substr($kata, 0, 1))->implode('')
+                );
+                $namaPeran = \App\Models\User::LABEL_ROLE[auth()->user()->role] ?? auth()->user()->role;
+            @endphp
+
             <div class="kanan">
-                <span>{{ auth()->user()->name }} · {{ \App\Models\User::LABEL_ROLE[auth()->user()->role] ?? auth()->user()->role }}</span>
-                <a href="{{ route('akun.password') }}">Ganti password</a>
-                <button type="button" class="tombol kecil" id="ganti-tema"><span id="label-tema">Mode gelap</span></button>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="tombol kecil">Keluar</button>
-                </form>
+                <x-tombol-tema />
+
+                {{-- Menu akun: dibuka lewat tombol, ditutup dengan klik di luar atau Escape (tampilan.js) --}}
+                <div class="akun" data-akun>
+                    <button type="button" class="akun-tombol" aria-expanded="false" aria-controls="menu-akun">
+                        <span class="akun-inisial" aria-hidden="true">{{ $inisial }}</span>
+                        <span class="akun-nama">{{ $namaLengkap }}</span>
+                        <svg class="akun-panah" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
+                    </button>
+
+                    <div class="akun-menu" id="menu-akun">
+                        <div class="akun-kepala">
+                            <strong>{{ $namaLengkap }}</strong>
+                            <span>{{ auth()->user()->email }}</span>
+                            <span>{{ $namaPeran }}</span>
+                        </div>
+
+                        <a href="{{ route('akun.password') }}" class="akun-butir">Ganti password</a>
+
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="akun-butir akun-keluar">Keluar</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </header>
     @endauth

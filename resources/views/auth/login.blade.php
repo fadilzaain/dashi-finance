@@ -4,23 +4,16 @@
 
 @section('isi')
     <div class="masuk">
-        {{-- Latar aurora: tiga gradasi besar yang melayang pelan (murni CSS, tanpa gambar) --}}
-        <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
-
-        {{-- Tombol tema: halaman login tidak punya header, jadi tombolnya ditaruh di pojok kanan atas --}}
-        <button type="button" class="masuk-tema" id="ganti-tema"><span id="label-tema">Mode gelap</span></button>
-
+        {{-- Tombol tema: halaman login tidak punya header, jadi ditaruh di pojok kanan atas --}}
+        <x-tombol-tema class="masuk-tema" />
         <div class="masuk-kartu @if ($errors->any()) getar @endif">
-            {{-- Kepala: logo RSUD dengan cahaya berdenyut, nama aplikasi, dan instansi --}}
             <div class="masuk-kepala">
-                <div class="masuk-logo-bungkus muncul" style="--d:.1s">
-                    {{-- Logo dibaca dari public/images/logo-rsud.png. Kalau file belum ada, tampil tanda bawaan --}}
-                    @if (file_exists(public_path('images/logo-rsud-jombang.png')))
-                        <img src="{{ asset('images/logo-rsud-jombang.png') }}" alt="Logo RSUD Kabupaten Jombang" class="masuk-logo">
-                    @else
-                        <span class="masuk-logo-cadangan" aria-hidden="true"></span>
-                    @endif
-                </div>
+                {{-- Logo dibaca dari public/images/logo-rsud-jombang.png; bila belum ada, tampil tanda bawaan --}}
+                @if (file_exists(public_path('images/logo-rsud-jombang.png')))
+                    <img src="{{ asset('images/logo-rsud-jombang.png') }}" alt="Logo RSUD Kabupaten Jombang" class="masuk-logo muncul" style="--d:.1s">
+                @else
+                    <span class="masuk-logo-cadangan muncul" style="--d:.1s" aria-hidden="true"></span>
+                @endif
 
                 <h1 class="muncul" style="--d:.2s">DASHI Finance</h1>
                 <p class="masuk-instansi muncul" style="--d:.28s">RSUD Kabupaten Jombang</p>
@@ -31,7 +24,7 @@
             <form method="POST" action="{{ route('login.post') }}" id="form-masuk">
                 @csrf
 
-                {{-- Label melayang: placeholder dibuat spasi supaya CSS bisa tahu kapan kolom sudah terisi --}}
+                {{-- Label melayang: placeholder dibuat spasi supaya CSS tahu kapan kolom sudah terisi --}}
                 <div class="fl muncul @error('email') ada-galat @enderror" style="--d:.44s">
                     <div class="fl-kotak">
                         <input id="email" name="email" type="email" class="fl-input" placeholder=" "

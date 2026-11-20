@@ -1,12 +1,14 @@
 // Perilaku tampilan yang dipakai semua halaman: pindah tema dan garis progres saat form dikirim.
 const html = document.documentElement;
 const tombolTema = document.getElementById('ganti-tema');
-const labelTema = document.getElementById('label-tema');
 
+// Tombol tema berupa ikon: teks bantuannya mengikuti tema yang sedang aktif
 const perbaruiLabel = () => {
-    if (labelTema) {
-        labelTema.textContent = html.dataset.theme === 'dark' ? 'Mode terang' : 'Mode gelap';
-    }
+    if (!tombolTema) return;
+
+    const teks = html.dataset.theme === 'dark' ? 'Ganti ke mode terang' : 'Ganti ke mode gelap';
+    tombolTema.setAttribute('aria-label', teks);
+    tombolTema.title = teks;
 };
 perbaruiLabel();
 
@@ -66,42 +68,6 @@ window.addEventListener('pageshow', (event) => {
         document.body.classList.remove('memuat');
     }
 });
-
-// Jam berjalan di kartu selamat datang (beranda). Selalu memakai WIB, apa pun zona waktu perangkat.
-const elJam = document.querySelector('[data-jam]');
-
-if (elJam) {
-    const elTanggal = document.querySelector('[data-tanggal]');
-    const elSalam = document.querySelector('[data-salam]');
-
-    const formatJam = new Intl.DateTimeFormat('id-ID', {
-        timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
-    });
-    const formatTanggal = new Intl.DateTimeFormat('id-ID', {
-        timeZone: 'Asia/Jakarta', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-    });
-    const formatJamSaja = new Intl.DateTimeFormat('en-GB', {
-        timeZone: 'Asia/Jakarta', hour: 'numeric', hourCycle: 'h23',
-    });
-
-    const salamUntuk = (jam) => {
-        if (jam >= 4 && jam < 11) return 'Selamat pagi';
-        if (jam >= 11 && jam < 15) return 'Selamat siang';
-        if (jam >= 15 && jam < 18) return 'Selamat sore';
-        return 'Selamat malam';
-    };
-
-    const perbaruiJam = () => {
-        const sekarang = new Date();
-        // Locale id-ID memakai titik sebagai pemisah jam; diganti titik dua supaya sama dengan tampilan awal
-        elJam.textContent = formatJam.format(sekarang).replace(/\./g, ':');
-        if (elTanggal) elTanggal.textContent = formatTanggal.format(sekarang);
-        if (elSalam) elSalam.textContent = salamUntuk(parseInt(formatJamSaja.format(sekarang), 10));
-    };
-
-    perbaruiJam();
-    window.setInterval(perbaruiJam, 1000);
-}
 
 // Tombol "Salin" (mis. password sementara di Kelola akun): salin teks elemen yang ditunjuk data-salin
 document.querySelectorAll('[data-salin]').forEach((tombol) => {
@@ -166,3 +132,95 @@ document.querySelectorAll('.toast').forEach((toast) => {
         toast.querySelector('.toast-bar')?.addEventListener('animationend', tutup);
     }
 });
+
+// Angka ringkasan yang naik dari nol saat halaman dibuka (elemen ber-atribut data-hitung).
+// Teks akhirnya selalu dikembalikan persis seperti yang ditulis server, jadi animasi
+// ini tidak bisa mengubah angka yang tampil.
+if (!kurangiGerak.matches) {
+    const format = new Intl.NumberFormat('id-ID');
+    const mulaiPelan = (t) => 1 - (1 - t) ** 3;
+
+    document.querySelectorAll('[data-hitung]').forEach((el) => {
+        const sasaran = el.querySelector('.angka') ?? el;
+        const akhir = Number(el.dataset.hitung);
+        const teksAkhir = sasaran.textContent;
+
+        if (!Number.isFinite(akhir) || akhir <= 0) return;
+
+        const durasi = Math.min(1100, 500 + String(akhir).length * 60);
+        const mulai = performance.now();
+
+        const langkah = (sekarang) => {
+            const t = Math.min(1, (sekarang - mulai) / durasi);
+
+            if (t < 1) {
+                sasaran.textContent = format.format(Math.round(akhir * mulaiPelan(t)));
+                requestAnimationFrame(langkah);
+            } else {
+                sasaran.textContent = teksAkhir;
+            }
+        };
+
+        requestAnimationFrame(langkah);
+    });
+}
+// Jam berjalan di kartu selamat datang (beranda). Selalu memakai WIB, apa pun zona waktu perangkat.
+const elJam = document.querySelector('[data-jam]');
+
+if (elJam) {
+    const elTanggal = document.querySelector('[data-tanggal]');
+    const elSalam = document.querySelector('[data-salam]');
+
+    const formatJam = new Intl.DateTimeFormat('id-ID', {
+        timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
+    });
+    const formatTanggal = new Intl.DateTimeFormat('id-ID', {
+        timeZone: 'Asia/Jakarta', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    });
+    const formatJamSaja = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Jakarta', hour: 'numeric', hourCycle: 'h23',
+    });
+
+    const salamUntuk = (jam) => {
+        if (jam >= 4 && jam < 11) return 'Selamat pagi';
+        if (jam >= 11 && jam < 15) return 'Selamat siang';
+        if (jam >= 15 && jam < 18) return 'Selamat sore';
+        return 'Selamat malam';
+    };
+
+    const perbaruiJam = () => {
+        const sekarang = new Date();
+        // Locale id-ID memakai titik sebagai pemisah jam; diganti titik dua supaya sama dengan tampilan awal
+        elJam.textContent = formatJam.format(sekarang).replace(/\./g, ':');
+        if (elTanggal) elTanggal.textContent = formatTanggal.format(sekarang);
+        if (elSalam) elSalam.textContent = salamUntuk(parseInt(formatJamSaja.format(sekarang), 10));
+    };
+
+    perbaruiJam();
+    window.setInterval(perbaruiJam, 1000);
+}
+
+// Menu akun di header: dibuka lewat tombol, ditutup dengan klik di luar atau tombol Escape
+const akun = document.querySelector('[data-akun]');
+
+if (akun) {
+    const pemicu = akun.querySelector('.akun-tombol');
+
+    const buka = (terbuka) => {
+        akun.classList.toggle('terbuka', terbuka);
+        pemicu.setAttribute('aria-expanded', String(terbuka));
+    };
+
+    pemicu.addEventListener('click', () => buka(!akun.classList.contains('terbuka')));
+
+    document.addEventListener('click', (event) => {
+        if (!akun.contains(event.target)) buka(false);
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && akun.classList.contains('terbuka')) {
+            buka(false);
+            pemicu.focus();
+        }
+    });
+}

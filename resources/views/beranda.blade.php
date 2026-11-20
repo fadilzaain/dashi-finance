@@ -2,6 +2,8 @@
 
 @section('judul', 'Beranda · DASHI Finance')
 
+@use('App\Services\Keuangan\Uang')
+
 @section('isi')
     @php
         // Sapaan awal dihitung di server (zona waktu WIB) supaya tidak berkedip; jam berjalan diurus tampilan.js
@@ -14,6 +16,7 @@
             default => 'Selamat malam',
         };
         $namaPeran = \App\Models\User::LABEL_ROLE[auth()->user()->role] ?? auth()->user()->role;
+        $angkaPindah = substr(Uang::rupiah($pindahSen), 2);   // tanpa awalan "Rp"
     @endphp
 
     {{-- Kartu selamat datang: sapaan sesuai waktu, nama pengguna, tanggal, dan jam berjalan --}}
@@ -31,30 +34,109 @@
         </div>
     </div>
 
-    <div class="kartu lebar terpisah">
-        <h2>Pilih pekerjaan</h2>
+    <div class="beranda-grid">
+        {{-- Kartu: yang menunggu tindakan petugas --}}
+        <div class="kartu lebar">
+            <h2>Perlu tindakan</h2>
 
-        <ul class="pintasan">
-            <li>
-                <a href="{{ route('unggah.form') }}">
-                    <strong>Unggah mutasi</strong>
-                    <span>Baca file mutasi BNI dan BPD, periksa hasilnya, lalu simpan ke data final.</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('pindah.index') }}">
-                    <strong>Pindah dana antar rekening</strong>
-                    <span>Konfirmasi uang RS yang dipindahkan antar rekening milik sendiri.</span>
-                </a>
-            </li>
-            @if (auth()->user()->isAdmin())
+            @if ($batchMenunggu > 0 || $pindahJumlah > 0)
+                <ul class="tindakan">
+                    @if ($batchMenunggu > 0)
+                        <li>
+                            <a href="{{ route('unggah.form') }}">
+                                <span class="tindakan-angka" data-hitung="{{ $batchMenunggu }}">{{ $batchMenunggu }}</span>
+                                <span class="tindakan-teks">
+                                    <strong>Unggahan menunggu disimpan</strong>
+                                    <span>Periksa hasil rekonsiliasi, lalu simpan ke data final.</span>
+                                </span>
+                                <span></span>
+                            </a>
+                        </li>
+                    @endif
+                    @if ($pindahJumlah > 0)
+                        <li>
+                            <a href="{{ route('pindah.index') }}">
+                                <span class="tindakan-angka" data-hitung="{{ $pindahJumlah }}">{{ $pindahJumlah }}</span>
+                                <span class="tindakan-teks">
+                                    <strong>Usulan pindah dana menunggu konfirmasi</strong>
+                                    <span>Uang RS yang dipindah antar rekening sendiri.</span>
+                                </span>
+                                <span class="tindakan-nilai">Rp<span data-hitung="{{ intdiv($pindahSen, 100) }}">{{ $angkaPindah }}</span></span>
+                            </a>
+                        </li>
+                    @endif
+                </ul>
+            @else
+                <p class="petunjuk">Tidak ada yang menunggu tindakan.</p>
+            @endif
+        </div>
+
+        {{-- Kartu: pintasan pekerjaan --}}
+        <div class="kartu lebar">
+            <h2>Pekerjaan</h2>
+
+            <ul class="pintasan">
                 <li>
-                    <a href="{{ route('pengguna.index') }}">
-                        <strong>Kelola akun</strong>
-                        <span>Tambah petugas, atur peran, nonaktifkan akun, dan reset password.</span>
+                    <a href="{{ route('unggah.form') }}">
+                        <strong>Unggah mutasi</strong>
+                        <span>Baca file mutasi BNI dan BPD, periksa hasilnya, lalu simpan ke data final.</span>
                     </a>
                 </li>
-            @endif
-        </ul>
+                <li>
+                    <a href="{{ route('pindah.index') }}">
+                        <strong>Pindah dana antar rekening</strong>
+                        <span>Konfirmasi uang RS yang dipindahkan antar rekening milik sendiri.</span>
+                    </a>
+                </li>
+                @if (auth()->user()->isAdmin())
+                    <li>
+                        <a href="{{ route('pengguna.index') }}">
+                            <strong>Kelola akun</strong>
+                            <span>Tambah petugas, atur peran, nonaktifkan akun, dan reset password.</span>
+                        </a>
+                    </li>
+                @endif
+            </ul>
+        </div>
+    </div>
+
+    {{-- Kartu: keadaan data final tiap rekening --}}
+    <div class="kartu lebar terpisah">
+        <h2>Data final per rekening</h2>
+
+        <div class="tabel-bungkus">
+            <table class="tabel">
+                <thead>
+                    <tr>
+                        <th>Rekening</th>
+                        <th>Bank</th>
+                        <th>Mutasi terakhir</th>
+                        <th class="kanan">Jumlah mutasi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($rekening as $r)
+                        <tr>
+                            <td>{{ $r['kode'] }}<span class="waktu-kecil">{{ $r['nama'] }}</span></td>
+                            <td>{{ $r['bank'] }}</td>
+                            <td>
+                                @if ($r['terakhir'])
+                                    {{ $r['terakhir']->format('d/m/Y') }}
+                                    <span class="waktu-kecil">{{ $r['hariLalu'] === 0 ? 'Hari ini' : $r['hariLalu'].' hari lalu' }}</span>
+                                @else
+                                    <span class="lencana netral">Belum ada data</span>
+                                @endif
+                            </td>
+                            <td class="kanan">{{ number_format($r['jumlah'], 0, ',', '.') }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="kosong">Belum ada rekening aktif.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <p class="petunjuk">Tanggal transaksi terakhir yang sudah tersimpan di data final.</p>
     </div>
 @endsection

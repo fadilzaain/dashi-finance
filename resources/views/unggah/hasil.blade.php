@@ -55,11 +55,11 @@
 
         @if (in_array($batch->status, [KeuImporBatch::STATUS_MENUNGGU_VERIFIKASI, KeuImporBatch::STATUS_DISIMPAN], true))
             <div class="ringkasan">
-                <div><strong>{{ $batch->jumlah_baris }}</strong><span>Total baris</span></div>
-                <div><strong>{{ $batch->jumlah_valid }}</strong><span>Valid</span></div>
-                <div><strong>{{ $batch->jumlah_peringatan }}</strong><span>Peringatan</span></div>
-                <div><strong>{{ $batch->jumlah_tidak_valid }}</strong><span>Tidak valid</span></div>
-                <div><strong>{{ $batch->jumlah_duplikat }}</strong><span>Duplikat</span></div>
+                <div><strong data-hitung="{{ $batch->jumlah_baris }}">{{ $batch->jumlah_baris }}</strong><span>Total baris</span></div>
+                <div><strong data-hitung="{{ $batch->jumlah_valid }}">{{ $batch->jumlah_valid }}</strong><span>Valid</span></div>
+                <div><strong data-hitung="{{ $batch->jumlah_peringatan }}">{{ $batch->jumlah_peringatan }}</strong><span>Peringatan</span></div>
+                <div><strong data-hitung="{{ $batch->jumlah_tidak_valid }}">{{ $batch->jumlah_tidak_valid }}</strong><span>Tidak valid</span></div>
+                <div><strong data-hitung="{{ $batch->jumlah_duplikat }}">{{ $batch->jumlah_duplikat }}</strong><span>Duplikat</span></div>
             </div>
 
             <h2>
@@ -70,6 +70,18 @@
                     <span class="lencana netral">Tidak bisa diperiksa</span>
                 @endif
             </h2>
+
+                        @if ($batch->hasil_rekonsiliasi === KeuImporBatch::REKON_COCOK)
+                <div class="seimbang" role="status">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5"/><path d="M7 12.5l3.2 3.2L17 8.8"/></svg>
+                    <p><strong>Saldo seimbang.</strong> Hasil hitung sama dengan angka di file.</p>
+                </div>
+            @elseif ($batch->hasil_rekonsiliasi === KeuImporBatch::REKON_SELISIH)
+                <div class="seimbang selisih" role="alert">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l9 16H3L12 4z"/><path d="M12 10v4"/><path d="M12 17.5v.01"/></svg>
+                    <p><strong>Ada selisih.</strong> Hasil hitung berbeda dari angka di file; lihat kolom Selisih di bawah.</p>
+                </div>
+            @endif
 
             <div class="tabel-bungkus">
                 <table class="tabel">
