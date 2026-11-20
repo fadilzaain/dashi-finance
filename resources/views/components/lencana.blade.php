@@ -17,8 +17,13 @@
         'needs_review'        => ['Menunggu konfirmasi', 'peringatan'],
         'matched'             => ['Terkonfirmasi', 'ok'],
         'rejected'            => ['Bukan pindah dana', 'netral'],
+        'aktif'               => ['Aktif', 'ok'],
+        'nonaktif'            => ['Nonaktif', 'netral'],
     ];
     [$label, $nada] = $peta[$status] ?? [$status, 'netral'];
+
+    // Status yang sedang menunggu tindakan: titiknya berdenyut
+    $berdenyut = in_array($status, ['diproses', 'menunggu_verifikasi', 'needs_review'], true);
 @endphp
 
-<span class="lencana {{ $nada }}">{{ $label }}</span>
+<span @class(['lencana', $nada, 'denyut' => $berdenyut])>{{ $label }}</span>

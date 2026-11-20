@@ -37,6 +37,9 @@ final class AuditLog
     public const BATALKAN_BATCH = 'batalkan_batch';
     public const PENGGUNA_DIBUAT = 'pengguna_dibuat';
     public const PASSWORD_DIRESET = 'password_direset';
+    public const PENGGUNA_DIUBAH_PERAN = 'pengguna_diubah_peran';
+    public const PENGGUNA_DIAKTIFKAN = 'pengguna_diaktifkan';
+    public const PENGGUNA_DINONAKTIFKAN = 'pengguna_dinonaktifkan';
     public const CARI_TRANSFER = 'cari_transfer_internal';
     public const KONFIRMASI_TRANSFER = 'konfirmasi_transfer_internal';
     public const TOLAK_TRANSFER = 'tolak_transfer_internal';
@@ -55,6 +58,9 @@ final class AuditLog
         self::BATALKAN_BATCH => 'Batalkan batch',
         self::PENGGUNA_DIBUAT => 'Pengguna dibuat',
         self::PASSWORD_DIRESET => 'Password di-reset',
+        self::PENGGUNA_DIUBAH_PERAN => 'Peran pengguna diubah',
+        self::PENGGUNA_DIAKTIFKAN => 'Pengguna diaktifkan',
+        self::PENGGUNA_DINONAKTIFKAN => 'Pengguna dinonaktifkan',
         self::CARI_TRANSFER => 'Cari usulan pindah dana',
         self::KONFIRMASI_TRANSFER => 'Konfirmasi pindah dana internal',
         self::TOLAK_TRANSFER => 'Tolak: bukan pindah dana',

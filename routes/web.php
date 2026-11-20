@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GantiPasswordController;
+use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\PindahDanaController;
 use App\Http\Controllers\UnggahMutasiController;
 use Illuminate\Support\Facades\Route;
@@ -40,7 +41,7 @@ Route::middleware(['auth', 'aktif', 'wajib.ganti'])->group(function () {
             ->whereUuid('batch')->middleware('throttle:6,1')->name('batalkan');
     });
 
-        // Pindah dana antar rekening RS sendiri: admin dan keuangan
+    // Pindah dana antar rekening RS sendiri: admin dan keuangan
     Route::middleware('role:admin,keuangan')->prefix('pindah-dana')->name('pindah.')->group(function () {
         Route::get('/', [PindahDanaController::class, 'index'])->name('index');
         Route::post('/cari', [PindahDanaController::class, 'cari'])->middleware('throttle:6,1')->name('cari');
@@ -54,6 +55,14 @@ Route::middleware(['auth', 'aktif', 'wajib.ganti'])->group(function () {
     // Khusus admin
     Route::middleware('role:admin')->group(function () {
         Route::get('/audit', [AuditLogController::class, 'index'])->name('audit.index');
-        // Kelola pengguna ditambahkan di milestone berikutnya
+
+        // Kelola akun: tambah, ubah peran, aktif/nonaktif, reset password
+        Route::prefix('pengguna')->name('pengguna.')->group(function () {
+            Route::get('/', [PenggunaController::class, 'index'])->name('index');
+            Route::post('/', [PenggunaController::class, 'simpan'])->middleware('throttle:10,1')->name('simpan');
+            Route::put('/{pengguna}/peran', [PenggunaController::class, 'ubahPeran'])->whereNumber('pengguna')->middleware('throttle:30,1')->name('peran');
+            Route::post('/{pengguna}/status', [PenggunaController::class, 'ubahStatus'])->whereNumber('pengguna')->middleware('throttle:30,1')->name('status');
+            Route::post('/{pengguna}/reset-password', [PenggunaController::class, 'resetPassword'])->whereNumber('pengguna')->middleware('throttle:10,1')->name('reset');
+        });
     });
 });

@@ -22,12 +22,6 @@
         ];
     @endphp
 
-    @if (session('status'))
-        <div class="info">{{ session('status') }}</div>
-    @endif
-    @if (session('peringatan'))
-        <div class="info peringatan">{{ session('peringatan') }}</div>
-    @endif
     @if ($errors->any())
         <div class="info peringatan">
             @foreach ($errors->all() as $pesan)

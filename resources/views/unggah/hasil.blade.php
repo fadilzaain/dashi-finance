@@ -20,10 +20,6 @@
 
     <p><a href="{{ route('unggah.form') }}">← Kembali ke unggah</a></p>
 
-    @if (session('status'))
-        <div class="info">{{ session('status') }}</div>
-    @endif
-
     <div class="kartu lebar">
         <h1>Hasil unggah <x-lencana :status="$batch->status" /></h1>
         <p class="sub">{{ $batch->nama_file_asli }}</p>
