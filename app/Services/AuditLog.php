@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\KeuAuditLog;
 use App\Models\KeuImporBatch;
+use App\Models\KeuTransferInternal;
 use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
@@ -36,6 +37,10 @@ final class AuditLog
     public const BATALKAN_BATCH = 'batalkan_batch';
     public const PENGGUNA_DIBUAT = 'pengguna_dibuat';
     public const PASSWORD_DIRESET = 'password_direset';
+    public const CARI_TRANSFER = 'cari_transfer_internal';
+    public const KONFIRMASI_TRANSFER = 'konfirmasi_transfer_internal';
+    public const TOLAK_TRANSFER = 'tolak_transfer_internal';
+    public const KEMBALIKAN_TRANSFER = 'kembalikan_transfer_internal';
 
     // Label untuk tampilan dan filter halaman audit
     public const LABEL = [
@@ -50,6 +55,10 @@ final class AuditLog
         self::BATALKAN_BATCH => 'Batalkan batch',
         self::PENGGUNA_DIBUAT => 'Pengguna dibuat',
         self::PASSWORD_DIRESET => 'Password di-reset',
+        self::CARI_TRANSFER => 'Cari usulan pindah dana',
+        self::KONFIRMASI_TRANSFER => 'Konfirmasi pindah dana internal',
+        self::TOLAK_TRANSFER => 'Tolak: bukan pindah dana',
+        self::KEMBALIKAN_TRANSFER => 'Kembalikan ke menunggu konfirmasi',
     ];
 
     /**
@@ -111,6 +120,7 @@ final class AuditLog
         return match (true) {
             $objek instanceof KeuImporBatch => 'batch',
             $objek instanceof User => 'pengguna',
+            $objek instanceof KeuTransferInternal => 'transfer_internal',
             default => Str::snake(class_basename($objek)),
         };
     }

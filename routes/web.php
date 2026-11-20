@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GantiPasswordController;
+use App\Http\Controllers\PindahDanaController;
 use App\Http\Controllers\UnggahMutasiController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +38,17 @@ Route::middleware(['auth', 'aktif', 'wajib.ganti'])->group(function () {
             ->whereUuid('batch')->middleware('throttle:6,1')->name('setujui');
         Route::post('/{batch}/batalkan', [UnggahMutasiController::class, 'batalkan'])
             ->whereUuid('batch')->middleware('throttle:6,1')->name('batalkan');
+    });
+
+        // Pindah dana antar rekening RS sendiri: admin dan keuangan
+    Route::middleware('role:admin,keuangan')->prefix('pindah-dana')->name('pindah.')->group(function () {
+        Route::get('/', [PindahDanaController::class, 'index'])->name('index');
+        Route::post('/cari', [PindahDanaController::class, 'cari'])->middleware('throttle:6,1')->name('cari');
+        Route::post('/konfirmasi-massal', [PindahDanaController::class, 'konfirmasiMassal'])->middleware('throttle:6,1')->name('massal');
+
+        Route::post('/{transfer}/setujui', [PindahDanaController::class, 'setujui'])->whereNumber('transfer')->middleware('throttle:30,1')->name('setujui');
+        Route::post('/{transfer}/tolak', [PindahDanaController::class, 'tolak'])->whereNumber('transfer')->middleware('throttle:30,1')->name('tolak');
+        Route::post('/{transfer}/kembalikan', [PindahDanaController::class, 'kembalikan'])->whereNumber('transfer')->middleware('throttle:30,1')->name('kembalikan');
     });
 
     // Khusus admin

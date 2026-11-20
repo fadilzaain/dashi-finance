@@ -14,6 +14,9 @@
         'duplikat'            => ['Duplikat', 'netral'],
         'cocok'               => ['Cocok', 'ok'],
         'selisih'             => ['Selisih', 'bahaya'],
+        'needs_review'        => ['Menunggu konfirmasi', 'peringatan'],
+        'matched'             => ['Terkonfirmasi', 'ok'],
+        'rejected'            => ['Bukan pindah dana', 'netral'],
     ];
     [$label, $nada] = $peta[$status] ?? [$status, 'netral'];
 @endphp

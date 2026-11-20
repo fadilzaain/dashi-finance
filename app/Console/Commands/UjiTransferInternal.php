@@ -136,7 +136,7 @@ class UjiTransferInternal extends Command
             $this->table(['Nominal', 'Mutasi', 'Lawan bernominal sama terdekat', ...$judulDesk], array_map(fn (array $s) => [
                 Uang::rupiah($s['mutasi']->sen),
                 $sel($s['mutasi']),
-                $s['terdekatDetik'] === null ? '–' : $this->durasi($s['terdekatDetik']),
+                $s['terdekatDetik'] === null ? '-' : $this->durasi($s['terdekatDetik']),
                 ...($opsi['deskripsi'] ? [$desk($s['mutasi']->id)] : []),
             ], array_slice($daftar, 0, $maks)));
         }
